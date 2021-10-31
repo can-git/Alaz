@@ -63,14 +63,14 @@ def preprocess():
 
     cv2.circle(frame, (int(frame.shape[1] / 2), int(frame.shape[0] / 2)), 6, (0, 255, 0), -1)
 
-    return frame, ids, corners
+    return frame, ids, corners, gray
 
 
 def main_loop():
     global DETECTED, LOWERING, LIFTING, COUNTDOWN_FOR_LIFTING
 
     while True:
-        frame, ids, corners = preprocess()
+        frame, ids, corners, gray = preprocess()
 
         if ids is not None:
             DETECTED = True
@@ -91,7 +91,7 @@ def main_loop():
         COUNTDOWN_FOR_LIFTING -= 1
 
         # output.write(frame)
-        cv2.imshow('Display', frame)
+        cv2.imshow('Display', gray)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

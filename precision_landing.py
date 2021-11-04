@@ -91,7 +91,7 @@ def main_loop():
         COUNTDOWN_FOR_LIFTING -= 1
 
         # output.write(frame)
-        cv2.imshow('Display', gray)
+        cv2.imshow('Display', frame)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
 

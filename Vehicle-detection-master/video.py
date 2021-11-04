@@ -5,20 +5,19 @@ import imutils
 from imutils.video import FPS
 from imutils.video import VideoStream
 
-INPUT_FILE = 'videos/video1.mp4'
-OUTPUT_FILE = 'output.avi'
+INPUT_FILE = 'videos/7.mp4'
+OUTPUT_FILE = 'videos/Output/output{}.avi'.format(time.time())
 LABELS_FILE = 'data/coco.names'
 CONFIG_FILE = 'cfg/yolov3_tiny.cfg'
 WEIGHTS_FILE = 'weights/yolov3-tiny.weights'
 CONFIDENCE_THRESHOLD = 0.3
+FILTER_DATAS = [0, 2, 3, 5, 7]
 
 H = None
 W = None
 
-fps = FPS().start()
-
 fourcc = cv2.VideoWriter_fourcc(*"MJPG")
-writer = cv2.VideoWriter(OUTPUT_FILE, fourcc, 30,
+writer = cv2.VideoWriter(OUTPUT_FILE, fourcc, 5,
                          (800, 600), True)
 
 LABELS = open(LABELS_FILE).read().strip().split("\n")
@@ -33,12 +32,10 @@ vs = cv2.VideoCapture(INPUT_FILE)
 
 # determine only the *output* layer names that we need from YOLO
 ln = net.getLayerNames()
-
 ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
-cnt = 0
+start_time = 0
 while True:
-    cnt += 1
-    print("Frame number", cnt)
+    start_time = time.time()
     try:
         (grabbed, image) = vs.read()
     except:
@@ -83,6 +80,7 @@ while True:
 
                 # update our list of bounding box coordinates, confidences,
                 # and class IDs
+
                 boxes.append([x, y, int(width), int(height)])
                 confidences.append(float(confidence))
                 classIDs.append(classID)
@@ -96,34 +94,27 @@ while True:
     if len(idxs) > 0:
         # loop over the indexes we are keeping
         for i in idxs.flatten():
-            # extract the bounding box coordinates
-            (x, y) = (boxes[i][0], boxes[i][1])
-            (w, h) = (boxes[i][2], boxes[i][3])
+            if classIDs[i] in FILTER_DATAS:
+                # extract the bounding box coordinates
+                (x, y) = (boxes[i][0], boxes[i][1])
+                (w, h) = (boxes[i][2], boxes[i][3])
 
-            color = [int(c) for c in COLORS[classIDs[i]]]
+                color = [int(c) for c in COLORS[classIDs[i]]]
 
-            cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
-            text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
-            cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.5, color, 2)
+                cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
+                text = "{}: {:.4f}".format(LABELS[classIDs[i]], confidences[i])
+                cv2.putText(image, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
+                            0.5, color, 2)
 
     # show the output image
     cv2.imshow("output", cv2.resize(image, (800, 600)))
     writer.write(cv2.resize(image, (800, 600)))
-    fps.update()
+    print(time.time()-start_time)
     key = cv2.waitKey(1) & 0xFF
     if key == ord("q"):
         break
 
-fps.stop()
 
-print("[INFO] elasped time: {:.2f}".format(fps.elapsed()))
-print("[INFO] approx. FPS: {:.2f}".format(fps.fps()))
-
-# do a bit of cleanup
 cv2.destroyAllWindows()
-
-# release the file pointers
-print("[INFO] cleaning up...")
 writer.release()
 vs.release()

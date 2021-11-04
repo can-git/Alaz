@@ -21,7 +21,6 @@ sdist/
 var/
 wheels/
 Vehicle-detection-master/weights/
-Vehicle-detection-master/videos/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
